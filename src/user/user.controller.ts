@@ -18,7 +18,7 @@ import { ApiErrorCode } from 'src/common/enums/api-error-code.enum';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get()
   sayHi(): string {
@@ -32,5 +32,19 @@ export class UserController {
     // return this.userService.sayHi();
     // throw new HttpException('您无权登录', HttpStatus.FORBIDDEN);
     throw new ApiException('用户不存在', ApiErrorCode.USER_NOTEXIST);
+  }
+  @Get('create')
+  createUser() {
+    const user = {
+      name: '张三',
+      password: '123456',
+      age: 18,
+      // id: 1 //id有问题 
+    };
+    return this.userService.createUser(user);
+  }
+  @Get('findAll')
+  getAllUser() {
+    return this.userService.getAllUser(); 
   }
 }

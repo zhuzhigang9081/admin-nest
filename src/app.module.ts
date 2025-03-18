@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
+import { User } from './user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
@@ -14,7 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       username: 'root',//用户名
       password: 'root',//密码
       database: 'fs_admin', //数据库名
-      entities:[],//数据库对应的entity
+      entities:[User],//数据库对应的entity
       synchronize:true,//是否自动同步实体文件,生产环境关闭
       // connectorPackage:""
     }),

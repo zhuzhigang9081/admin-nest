@@ -9,42 +9,50 @@ import {
   Req,
   Request,
   Body,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import { ApiException } from 'src/common/filter/http-exception/api.exception';
 import { ApiErrorCode } from 'src/common/enums/api-error-code.enum';
 
+import { CacheService } from 'src/cache/cache.service';
+import { ApiOperation, ApiTags, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
+
+import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserVo } from './vo/create-user.vo';
+
+@ApiTags('用户模块')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly cacheService: CacheService,
+  ) { }
 
-  @Get()
-  sayHi(): string {
-    return this.userService.sayHi();
+  @ApiBearerAuth() //添加认证之后才能方法
+  @ApiOperation({
+    summary: '添加用户',// 接口描述信息
+  })
+  @ApiOkResponse({
+    description: '返回示例',// 响应描述信息
+    type: CreateUserVo
+  })
+  @Post('register')
+  createUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
   }
-  @Post('usertest/:id')
-  sayHi1(@Query() query: any, @Param() params: any, @Body() body: any): string {
-    console.log(query, 'query');
-    console.log(params, 'params');
-    console.log(body, 'body');
-    // return this.userService.sayHi();
-    // throw new HttpException('您无权登录', HttpStatus.FORBIDDEN);
-    throw new ApiException('用户不存在', ApiErrorCode.USER_NOTEXIST);
-  }
-  @Get('create')
-  createUser() {
-    const user = {
-      name: '张三',
-      password: '123456',
-      age: 18,
-      // id: 1 //id有问题 
-    };
-    return this.userService.createUser(user);
-  }
-  @Get('findAll')
-  getAllUser() {
-    return this.userService.getAllUser(); 
-  }
+
+
+  // @Get('findAll')
+  // getAllUser() {
+  //   return this.userService.getAllUser();
+  // }
+
+  // @Get('/set')
+  // setVal() {
+  //   return this.cacheService.set('age', '18')
+  // }
+  // @Get('/get')
+  // getVal() {
+  //   return this.cacheService.get('age')
+  // }
 }

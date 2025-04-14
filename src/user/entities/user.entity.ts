@@ -1,6 +1,20 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-@Entity()
+import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert } from "typeorm";
+import encry from '../../utils/crypto'
+import * as crypto from 'crypto'
+/**
+ * @Entity()，TypeORM 会默认使用类名作为数据库表的名称。默认情况下，类名会被自动转换为小写并用作表名
+ * @Entity("user") 显式地指定了这个实体对应的数据库表名为 "user"
+*/
+@Entity("user")
 export class User {
+    @BeforeInsert()
+    beforeInsert() {
+        this.salt = crypto.randomBytes(4).toString("base64");
+        this.password = encry(this.password, this.salt)
+    }
+
+
+
     @PrimaryGeneratedColumn("uuid")
     id: number; // 自增的主键
     @Column({ length: 30 }) // @Column()用于将类的属性映射到数据库表的列

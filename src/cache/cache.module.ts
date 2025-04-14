@@ -21,6 +21,11 @@ import { createClient } from 'redis'
       inject: [ConfigService]
     }
   ],
+  /*
+  exports 列出了你希望对外暴露的提供者（providers），以便其他模块可以通过导入当前模块来使用这些提供者。
+    只有通过 exports 的 providers 别的模块才能用
+
+  */
   exports:[CacheService]
 })
 export class CacheModule { }

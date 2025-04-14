@@ -19,6 +19,8 @@ import { ApiOperation, ApiTags, ApiOkResponse, ApiBearerAuth } from '@nestjs/swa
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateUserVo } from './vo/create-user.vo';
+import { LoginDto } from './dto/login.dto';
+import { LoginVo } from './vo/login.vo';
 
 @ApiTags('用户模块')
 @Controller('user')
@@ -28,9 +30,9 @@ export class UserController {
     private readonly cacheService: CacheService,
   ) { }
 
-  @ApiBearerAuth() //添加认证之后才能方法
+  // @ApiBearerAuth() //添加认证之后才能方法
   @ApiOperation({
-    summary: '添加用户',// 接口描述信息
+    summary: '注册',// 接口描述信息
   })
   @ApiOkResponse({
     description: '返回示例',// 响应描述信息
@@ -39,6 +41,17 @@ export class UserController {
   @Post('register')
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+  @ApiOperation({
+    summary: '登录',// 接口描述信息
+  })
+  @ApiOkResponse({
+    description: '返回示例',// 响应描述信息
+    type: LoginVo
+  })
+  @Post("login")
+  login(@Body() loginDto: LoginDto) {
+    return this.userService.login(loginDto);
   }
 
 

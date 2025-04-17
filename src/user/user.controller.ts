@@ -9,11 +9,11 @@ import {
   Req,
   Request,
   Body,
+  UseGuards
 } from '@nestjs/common';
 import { ApiException } from 'src/common/filter/http-exception/api.exception';
 import { ApiErrorCode } from 'src/common/enums/api-error-code.enum';
 
-import { CacheService } from 'src/cache/cache.service';
 import { ApiOperation, ApiTags, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 import { UserService } from './user.service';
@@ -21,13 +21,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { CreateUserVo } from './vo/create-user.vo';
 import { LoginDto } from './dto/login.dto';
 import { LoginVo } from './vo/login.vo';
+import { UserGuard } from './user.guard';
+import { Public } from 'src/public/public.decorator';
 
 @ApiTags('用户模块')
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly cacheService: CacheService,
   ) { }
 
   // @ApiBearerAuth() //添加认证之后才能方法
@@ -38,6 +39,7 @@ export class UserController {
     description: '返回示例',// 响应描述信息
     type: CreateUserVo
   })
+  @Public() //使用public装饰器 跳过守卫,不进行鉴权
   @Post('register')
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -49,23 +51,25 @@ export class UserController {
     description: '返回示例',// 响应描述信息
     type: LoginVo
   })
+  @Public()
   @Post("login")
   login(@Body() loginDto: LoginDto) {
     return this.userService.login(loginDto);
   }
 
+  @ApiOperation({
+    summary: '获取验证码',// 接口描述信息
+  })
+  @Public()
+  @Get('captcha')
+  getCaptcha() {
+    return this.userService.getCaptcha()
+   }
 
-  // @Get('findAll')
-  // getAllUser() {
-  //   return this.userService.getAllUser();
-  // }
+  // @UseGuards(UserGuard) // 单个接口使用守卫
+  @Get('testGuard')
+  async testGuard(@Req() req: any) {
+    return 1
+  }
 
-  // @Get('/set')
-  // setVal() {
-  //   return this.cacheService.set('age', '18')
-  // }
-  // @Get('/get')
-  // getVal() {
-  //   return this.cacheService.get('age')
-  // }
 }

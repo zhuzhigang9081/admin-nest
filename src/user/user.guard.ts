@@ -34,16 +34,16 @@ export class UserGuard implements CanActivate {
     }
     const realToken = await this.cacheService.get(token) //从缓存中获取真正token
     try {
+      
       const payload = await this.jwtService.verifyAsync(realToken, {
         secret: this.configService.get("JWT_SECRET") // 使用JWT_SECRET解析token
       })
       const { exp } = payload // 从payload中获取过期时间
       const nowTime = Math.floor(Date.now() / 1000) // 获取当前时间戳
-      const isExpired = nowTime - exp < 30
-      console.log(nowTime - exp, 'nowTime - exp')
+      const isExpired = exp -  nowTime < 3600
       // Token续期 如果token过期时间小于30秒，重新生成token并缓存
       if (isExpired) {
-        const newPayload = { username: payload.username, sub: payload.id }
+        const newPayload = { username: payload.username, sub: payload.sub }
         const newToken = await this.jwtService.signAsync(newPayload)
         this.cacheService.set(token, newToken, 7200)
       }

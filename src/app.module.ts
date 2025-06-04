@@ -1,12 +1,14 @@
 import { Inject, Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
+import { Menu } from './menu/entities/menu.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from './cache/cache.module';
+import { MenuModule } from './menu/menu.module';
+import { RoleModule } from './role/role.module';
 import * as path from 'path'
-
 const isProd = process.env.NODE_ENV === 'production';
 @Module({
   /* imports 数组用于指定当前模块依赖的其他模块。通过导入其他模块，你可以使用那些模块中定义的 providers、controllers 等组件,
@@ -36,12 +38,14 @@ const isProd = process.env.NODE_ENV === 'production';
           username: configService.get('DB_USER'),//用户名
           password: configService.get('DB_PASSWD'),//密码
           database: configService.get('DB_DATABASE'),//数据库名
-          entities: [User],//数据库对应的entity
+          // entities: [User,Menu],//数据库对应的entity
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],//数据库对应的entity
+          autoLoadEntities: true,//自动加载实体文件
           synchronize: !isProd,//是否自动同步实体文件,生产环境关闭
         }
       },
       inject: [ConfigService]
-    }), 
+    }),
     //引入 jwt 用于身份识别  
     JwtModule.registerAsync({
       global: true,
@@ -58,6 +62,8 @@ const isProd = process.env.NODE_ENV === 'production';
 
     }),
     CacheModule,
+    MenuModule,
+    RoleModule,
   ],
   // controllers: [],
   // providers: [],

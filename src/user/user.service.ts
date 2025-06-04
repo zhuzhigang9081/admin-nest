@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Repository ,In} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create_user.dto';
 import { LoginDto } from './dto/login.dto';
 import { CacheService } from 'src/cache/cache.service';
 
@@ -13,6 +13,7 @@ import { ApiErrorCode } from 'src/common/enums/api-error-code.enum';
 
 import encry from '../utils/crypto'
 import generateCaptcha from 'src/utils/generateCaptcha' //验证码生成器
+import  { Role } from '../role/entities/role.entity'
 
 @Injectable() //可注入的 ,NestJS 会自动解析这些依赖，并在实例化该类时将其注入。
 export class UserService {
@@ -20,6 +21,8 @@ export class UserService {
     constructor(
         @InjectRepository(User) //注入 User 实体的 Repository对象
         private userRepository: Repository<User>,
+        @InjectRepository(Role)
+        private roleRepository: Repository<Role>,
         private jwtService: JwtService,
         private cacheService: CacheService
 
@@ -31,7 +34,7 @@ export class UserService {
 
         // 缓存验证码
         const cacheCaptcha = await this.cacheService.get(id)
-        if (cacheCaptcha !== captcha) {
+        if (cacheCaptcha.toLowerCase() !== captcha.toLowerCase()) {
             throw new ApiException("验证码错误", ApiErrorCode.COMMON_CODE)
         }
         const exist = await this.userRepository.findOne({
@@ -42,6 +45,15 @@ export class UserService {
         }
         try {
             const newUser = new User()
+            if(createUserDto.role_ids?.length){
+                //查询需要绑定的角色列表(自动在关联表中生成关联关系)
+                const roleList = await this.roleRepository.find({
+                    where:{
+                        id:In(createUserDto.role_ids)
+                    }
+                })
+                newUser.roles = roleList
+            }
             newUser.username = username;
             newUser.password = password;
             await this.userRepository.save(newUser)
@@ -58,7 +70,7 @@ export class UserService {
     async login(loginDto: LoginDto) {
         const { username, password, id, captcha } = loginDto
         const cacheCaptcha = await this.cacheService.get(id)
-        if (cacheCaptcha !== captcha) {
+        if (cacheCaptcha.toLowerCase() !== captcha.toLowerCase()) {
             throw new ApiException("验证码错误", ApiErrorCode.COMMON_CODE)
         }
         const user = await this.findOne(username)
@@ -87,7 +99,7 @@ export class UserService {
 
     getCaptcha() {
         const { id, captcha } = generateCaptcha() //生成验证码
-        this.cacheService.set(id, captcha.text, 60)
+        this.cacheService.set(id, captcha.text, 600)
         return { id, img: captcha.data } //返回验证码id和验证码图片
     }
 

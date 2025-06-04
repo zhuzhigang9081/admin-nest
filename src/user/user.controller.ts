@@ -17,7 +17,7 @@ import { ApiErrorCode } from 'src/common/enums/api-error-code.enum';
 import { ApiOperation, ApiTags, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create_user.dto';
 import { CreateUserVo } from './vo/create-user.vo';
 import { LoginDto } from './dto/login.dto';
 import { LoginVo } from './vo/login.vo';

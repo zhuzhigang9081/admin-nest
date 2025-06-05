@@ -2,7 +2,7 @@ import { Controller, Body ,Post} from '@nestjs/common';
 import { RoleService } from './role.service';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateRoleDto } from './dto/create_role.dto';
-import { Public } from 'src/public/public.decorator';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @Controller('role')
 @ApiTags('角色模块')

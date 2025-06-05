@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { CacheService } from '../cache/cache.service'
+import { CacheService } from 'src/cache/cache.service'
 
 @Injectable()
 export class UserGuard implements CanActivate {
@@ -34,13 +34,13 @@ export class UserGuard implements CanActivate {
     }
     const realToken = await this.cacheService.get(token) //从缓存中获取真正token
     try {
-      
+
       const payload = await this.jwtService.verifyAsync(realToken, {
         secret: this.configService.get("JWT_SECRET") // 使用JWT_SECRET解析token
       })
       const { exp } = payload // 从payload中获取过期时间
       const nowTime = Math.floor(Date.now() / 1000) // 获取当前时间戳
-      const isExpired = exp -  nowTime < 3600
+      const isExpired = exp - nowTime < 3600
       // Token续期 如果token过期时间小于30秒，重新生成token并缓存
       if (isExpired) {
         const newPayload = { username: payload.username, sub: payload.sub }

@@ -6,6 +6,10 @@ import { User } from 'src/user/entities/user.entity';
 import { CreateMenuDto } from './dto/create_menu.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApiException } from 'src/common/filter/http-exception/api.exception';
+import { CacheService } from 'src/cache/cache.service';
+import { GetInfoVo } from './vo/getInfo.vo';
+import { filterPermissions } from 'src/utils/filterPermissions';
+import { convertToTree } from'src/utils/convertToTree';
 
 @Injectable()
 export class MenuService {
@@ -15,7 +19,9 @@ export class MenuService {
         @InjectRepository(Role)
         private readonly roleRepository: Repository<Role>,
         @InjectRepository(User)
-        private readonly userRepository: Repository<User>
+        private readonly userRepository: Repository<User>,
+        private readonly cacheService: CacheService,
+
     ) { }
 
     async createMenu(createMenuDto: CreateMenuDto) {
@@ -27,7 +33,7 @@ export class MenuService {
         }
     }
 
-    async getRouters(req): Promise<Menu[]> {
+    async getInfo(req): Promise<GetInfoVo> {
         const { user } = req
         console.log(user.sub, 'sub****')
         //根据关联关系通过user查询user下的菜单和角色
@@ -43,6 +49,7 @@ export class MenuService {
         //是否是超级管理员,是的话查询所有菜单
         const isAdmin = userList.roles?.find((item) => item.role_name === 'admin')
         let routers: Menu[] = []
+        let permissions: string[] = []
         if (isAdmin) {
             routers = await this.menuRepository.find({
                 order: {
@@ -52,7 +59,12 @@ export class MenuService {
                     status: 1
                 }
             })
-            return convertToTree(routers)
+            permissions = filterPermissions(routers)
+            await this.cacheService.set(`${user.sub}_permissions`, permissions, null)
+            return {
+                routers: convertToTree(routers),
+                permissions
+            }
         }
 
         interface MenuMap {
@@ -71,25 +83,13 @@ export class MenuService {
         )
         console.log(menus, 'menus****')
         routers = Object.values(menus)
+        permissions = filterPermissions(routers);
+        await this.cacheService.set(`${user.sub}_permissions`, permissions, 7200);
 
-        return convertToTree(routers)
-    }
-
-}
-
-export const convertToTree = (menuList, parentId: number | null = null) => {
-    console.log(menuList,'menuList****1')
-    const tree = [];
-
-    for (let i = 0; i < menuList.length; i++) {
-        if (menuList[i].parent_id === parentId) {
-            const children = convertToTree(menuList, menuList[i].id);
-            if (children.length) {
-                menuList[i].children = children;
-            }
-            tree.push(menuList[i]);
+        return {
+            routers: convertToTree(routers),
+            permissions
         }
     }
 
-    return tree;
-};
+}

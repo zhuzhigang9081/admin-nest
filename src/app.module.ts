@@ -8,7 +8,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from './cache/cache.module';
 import { MenuModule } from './menu/menu.module';
 import { RoleModule } from './role/role.module';
+import { APP_GUARD } from '@nestjs/core';
 import * as path from 'path'
+import { PermissionsGuard } from './common/guard/permissions.guard';
+import { UserGuard } from './common/guard/user.guard';
 const isProd = process.env.NODE_ENV === 'production';
 @Module({
   /* imports 数组用于指定当前模块依赖的其他模块。通过导入其他模块，你可以使用那些模块中定义的 providers、controllers 等组件,
@@ -66,6 +69,17 @@ const isProd = process.env.NODE_ENV === 'production';
     RoleModule,
   ],
   // controllers: [],
-  // providers: [],
+  providers: [
+    //! guard有顺序关系 先UserGuard 后PermissionsGuard  因为PermissionsGuard 依赖UserGuard
+    //因为menu中也要用到用户信息,所以把user模块也放在appmodule中,设为全局守卫 
+    {
+      provide: APP_GUARD, //整个user模块使用 守卫
+      useClass: UserGuard, //使用UserGuard守卫
+    },
+    {
+      provide: APP_GUARD, 
+      useClass: PermissionsGuard, // 将PermissionsGuard  放在appmodule中,设为全局守卫 其他模块就都可以使用了
+    },
+  ],
 })
 export class AppModule { }

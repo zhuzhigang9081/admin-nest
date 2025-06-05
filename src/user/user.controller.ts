@@ -21,8 +21,8 @@ import { CreateUserDto } from './dto/create_user.dto';
 import { CreateUserVo } from './vo/create-user.vo';
 import { LoginDto } from './dto/login.dto';
 import { LoginVo } from './vo/login.vo';
-import { UserGuard } from './user.guard';
-import { Public } from 'src/public/public.decorator';
+import { UserGuard } from 'src/common/guard/user.guard';
+import { Public } from 'src/common/decorator/public.decorator';
 
 @ApiTags('用户模块')
 @Controller('user')

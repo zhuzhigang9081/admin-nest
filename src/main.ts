@@ -21,6 +21,12 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter()) //添加全局过滤器
   app.useGlobalInterceptors(new TransformInterceptor())//添加全局拦截器
   app.useGlobalPipes(new ValidationPipe())//添加全局校验器 -内置校验管道 可自动校验 body query params 
+  //启用cors
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  })
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

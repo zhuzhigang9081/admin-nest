@@ -62,7 +62,7 @@ export class MenuService {
             permissions = filterPermissions(routers)
             await this.cacheService.set(`${user.sub}_permissions`, permissions, null)
             return {
-                routers: convertToTree(routers),
+                menuList: convertToTree(routers),
                 permissions
             }
         }
@@ -87,7 +87,7 @@ export class MenuService {
         await this.cacheService.set(`${user.sub}_permissions`, permissions, 7200);
 
         return {
-            routers: convertToTree(routers),
+            menuList: convertToTree(routers),
             permissions
         }
     }
